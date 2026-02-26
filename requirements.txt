@@ -1,0 +1,14 @@
+scikit-learn
+pandas
+numpy
+jobspy
+fastapi
+uvicorn
+streamlit
+mlflow
+python-dotenv
+requests
+imbalanced-learn
+matplotlib
+seaborn
+joblib
