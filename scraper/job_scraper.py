@@ -15,8 +15,40 @@ SEARCH_QUERIES = [
 ]
 
 KEEP_COLUMNS = [
-    "id", "title", "company", "location", "job_type",
-    "description", "job_url", "date_posted", "company_url",
+    "id",
+    "site",
+    "job_url",
+    "job_url_direct",
+    "title",
+    "company",
+    "location",
+    "date_posted",
+    "job_type",
+    "salary_source",
+    "interval",
+    "min_amount",
+    "max_amount",
+    "currency",
+    "is_remote",
+    "job_level",
+    "job_function",
+    "listing_type",
+    "emails",
+    "description",
+    "company_industry",
+    "company_url",
+    "company_logo",
+    "company_url_direct",
+    "company_addresses",
+    "company_num_employees",
+    "company_revenue",
+    "company_description",
+    "skills",
+    "experience_range",
+    "company_rating",
+    "company_reviews_count",
+    "vacancy_count",
+    "work_from_home_type",
 ]
 
 
@@ -28,11 +60,16 @@ def scrape_jobs_list() -> list[dict]:
         search_term = query["search_term"]
         print(f"Scraping: '{search_term}' ...")
         try:
+            kwargs = {}
+            if "linkedin" in query["site_name"]:
+                kwargs["linkedin_fetch_description"] = True
+
             df = scrape_jobs(
                 site_name=query["site_name"],
                 search_term=search_term,
                 location=query["location"],
                 results_wanted=query["results_wanted"],
+                **kwargs,
             )
             print(f"  Found {len(df)} results")
             all_frames.append(df)
