@@ -1,3 +1,4 @@
+import json
 import pandas as pd
 import numpy as np
 from sklearn.pipeline import Pipeline
@@ -69,6 +70,16 @@ def main():
         print(f"\nClassification Report:")
         print(classification_report(y_test, y_pred, target_names=["Real", "Fake"]))
         print(f"Confusion Matrix:\n{cm}")
+
+        # Save metrics to file for DVC tracking
+        metrics = {
+            "accuracy": accuracy,
+            "precision_fake": report["Fake"]["precision"],
+            "recall_fake": report["Fake"]["recall"],
+            "f1_fake": report["Fake"]["f1-score"],
+        }
+        with open("metrics.json", "w") as f:
+            json.dump(metrics, f, indent=2)
 
         # Log metrics to MLflow
         mlflow.log_metric("accuracy", accuracy)

@@ -1,0 +1,24 @@
+stages:
+  preprocess:
+    cmd: python ml/preprocess.py
+    deps:
+      - data/fake_job_postings.csv
+      - ml/preprocess.py
+    outs:
+      - data/train.csv
+      - data/test.csv
+
+  train:
+    cmd: python ml/train.py
+    deps:
+      - data/train.csv
+      - data/test.csv
+      - ml/train.py
+    outs:
+      - models/fake_job_model.joblib
+    metrics:
+      - metrics.json:
+          cache: false
+    plots:
+      - models/confusion_matrix.png:
+          cache: false
