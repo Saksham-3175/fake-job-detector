@@ -35,3 +35,7 @@ data/scraped_jobs.csv
 # Models (binary files)
 models/fake_job_model.joblib
 models/confusion_matrix.png
+
+# DVC internals
+.dvc/tmp/
+.dvc/cache/
