@@ -12,3 +12,5 @@ imbalanced-learn
 matplotlib
 seaborn
 joblib
+pytest
+ruff
