@@ -1,4 +1,6 @@
+import argparse
 import json
+import sys
 import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -9,14 +11,42 @@ from sklearn.metrics import (
     confusion_matrix,
 )
 import mlflow
+import mlflow.sklearn
 import joblib
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
+from mlflow.tracking import MlflowClient
 
 
 def main():
+    mlflow.set_tracking_uri("sqlite:///mlflow.db")
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--promote",
+        action="store_true",
+        help="Promote latest Staging model to Production (skips training)",
+    )
+    args = parser.parse_args()
+
+    client = MlflowClient()
+
+    if args.promote:
+        staging_versions = client.get_latest_versions("fake-job-detector", stages=["Staging"])
+        if staging_versions:
+            version = staging_versions[0].version
+            client.transition_model_version_stage(
+                name="fake-job-detector",
+                version=version,
+                stage="Production",
+            )
+            print(f"Model version {version} promoted to Production")
+        else:
+            print("No model in Staging — run `make train` first")
+        sys.exit(0)
+
     # Load data
     train_df = pd.read_csv("data/train.csv")
     test_df = pd.read_csv("data/test.csv")
@@ -106,16 +136,31 @@ def main():
         plt.savefig("models/confusion_matrix.png", dpi=150)
         plt.close()
 
-        # Log confusion matrix image as artifact
+        # Log artifacts
         mlflow.log_artifact("models/confusion_matrix.png")
-
-        # Save model
-        joblib.dump(pipeline, "models/fake_job_model.joblib")
-
-        # Log model artifact
         mlflow.log_artifact("models/fake_job_model.joblib")
 
-    # Print summary
+        # Register model in MLflow Model Registry
+        mlflow.sklearn.log_model(
+            sk_model=pipeline,
+            artifact_path="model",
+            registered_model_name="fake-job-detector",
+        )
+
+        # Save model locally for the API
+        joblib.dump(pipeline, "models/fake_job_model.joblib")
+
+    # Transition the newly registered version to Staging
+    latest_versions = client.get_latest_versions("fake-job-detector", stages=["None"])
+    if latest_versions:
+        version = latest_versions[0].version
+        client.transition_model_version_stage(
+            name="fake-job-detector",
+            version=version,
+            stage="Staging",
+        )
+        print(f"Model version {version} transitioned to Staging")
+
     recall_fake = report["Fake"]["recall"] * 100
     print("\nTraining complete.")
     print("Model saved to models/fake_job_model.joblib")

@@ -1,10 +1,13 @@
-.PHONY: preprocess train serve ui docker test lint clean all
+.PHONY: preprocess train promote serve ui docker test lint clean all
 
 preprocess:
 	python ml/preprocess.py
 
 train:
 	python ml/train.py
+
+promote:
+	python ml/train.py --promote
 
 serve:
 	uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
