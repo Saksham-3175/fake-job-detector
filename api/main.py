@@ -4,8 +4,6 @@ import os
 # Add project root to path so ml/ and scraper/ are importable
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-import joblib
-import pandas as pd
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel

@@ -1,0 +1,126 @@
+name: CI — Lint, Test & Model Quality Gate
+
+on:
+  push:
+    branches:
+      - main
+      - development
+  pull_request:
+    branches:
+      - development
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Lint
+        run: ruff check .
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest
+
+      - name: Check dataset availability
+        id: dataset_check
+        run: |
+          if [ -f "data/fake_job_postings.csv" ]; then
+            echo "available=true" >> $GITHUB_OUTPUT
+          else
+            echo "available=false" >> $GITHUB_OUTPUT
+            echo "::warning::data/fake_job_postings.csv not found — preprocess-dependent tests will be skipped"
+          fi
+
+      - name: Preprocess (if dataset available)
+        if: steps.dataset_check.outputs.available == 'true'
+        run: python ml/preprocess.py
+
+      - name: Run tests
+        run: pytest tests/ -v --tb=short
+
+  model-quality-gate:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Check dataset availability
+        id: dataset_check
+        run: |
+          if [ -f "data/fake_job_postings.csv" ]; then
+            echo "available=true" >> $GITHUB_OUTPUT
+          else
+            echo "available=false" >> $GITHUB_OUTPUT
+            echo "::warning::Dataset not available — model quality gate skipped"
+          fi
+
+      - name: Preprocess
+        if: steps.dataset_check.outputs.available == 'true'
+        run: python ml/preprocess.py
+
+      - name: Train
+        if: steps.dataset_check.outputs.available == 'true'
+        run: python ml/train.py
+
+      - name: Model quality gate
+        if: steps.dataset_check.outputs.available == 'true'
+        run: |
+          python - <<'EOF'
+          import json, sys
+
+          with open("metrics.json") as f:
+              m = json.load(f)
+
+          print("── Model Metrics ──────────────────────")
+          print(f"  accuracy       : {m['accuracy']:.4f}")
+          print(f"  precision_fake : {m['precision_fake']:.4f}")
+          print(f"  recall_fake    : {m['recall_fake']:.4f}")
+          print(f"  f1_fake        : {m['f1_fake']:.4f}")
+          print("───────────────────────────────────────")
+
+          failed = False
+          if m["recall_fake"] < 0.70:
+              print(f"FAIL: recall_fake {m['recall_fake']:.4f} < 0.70 threshold")
+              failed = True
+          else:
+              print(f"PASS: recall_fake {m['recall_fake']:.4f} >= 0.70")
+
+          if m["f1_fake"] < 0.60:
+              print(f"FAIL: f1_fake {m['f1_fake']:.4f} < 0.60 threshold")
+              failed = True
+          else:
+              print(f"PASS: f1_fake {m['f1_fake']:.4f} >= 0.60")
+
+          sys.exit(1 if failed else 0)
+          EOF

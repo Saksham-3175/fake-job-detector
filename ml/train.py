@@ -1,6 +1,5 @@
 import json
 import pandas as pd
-import numpy as np
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
@@ -67,7 +66,7 @@ def main():
         cm = confusion_matrix(y_test, y_pred)
 
         print(f"Overall Accuracy: {accuracy:.4f}")
-        print(f"\nClassification Report:")
+        print("\nClassification Report:")
         print(classification_report(y_test, y_pred, target_names=["Real", "Fake"]))
         print(f"Confusion Matrix:\n{cm}")
 
@@ -118,10 +117,10 @@ def main():
 
     # Print summary
     recall_fake = report["Fake"]["recall"] * 100
-    print(f"\nTraining complete.")
-    print(f"Model saved to models/fake_job_model.joblib")
+    print("\nTraining complete.")
+    print("Model saved to models/fake_job_model.joblib")
     print(f"Recall on fake listings: {recall_fake:.1f}% (higher = better at catching fakes)")
-    print(f"Open MLflow UI with: mlflow ui")
+    print("Open MLflow UI with: mlflow ui")
 
 
 if __name__ == "__main__":

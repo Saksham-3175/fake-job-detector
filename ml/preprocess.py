@@ -32,7 +32,7 @@ def main():
     fake_count = (df["fraudulent"] == 1).sum()
     fake_pct = fake_count / len(df) * 100
 
-    print(f"\nFinal class distribution:")
+    print("\nFinal class distribution:")
     print(f"  Real listings: {real_count}")
     print(f"  Fake listings: {fake_count}")
     print(f"  Fake percentage: {fake_pct:.2f}%")
