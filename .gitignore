@@ -1,6 +1,7 @@
 # Python
 __pycache__/
 *.py[cod]
+*.pyc
 *.egg-info/
 dist/
 build/
@@ -22,17 +23,16 @@ env/
 mlflow.db
 mlruns/
 
-# OS
-Thumbs.db
-.DS_Store
-
-# Data (large files — keep structure but not content)
-data/train.csv
-data/test.csv
-data/scraped_jobs.json
-data/scraped_jobs.csv
-
-
 # DVC internals
 .dvc/tmp/
 .dvc/cache/
+
+# Pytest
+.pytest_cache/
+
+# Ruff
+.ruff_cache/
+
+# OS
+Thumbs.db
+.DS_Store
