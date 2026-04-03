@@ -1,7 +1,8 @@
+import os
 import streamlit as st
 import requests
 
-API_BASE = "http://localhost:8000"
+API_BASE = os.getenv("API_BASE", "http://localhost:8000")
 
 st.set_page_config(
     page_title="Pipelined — Fake Job Detector",
@@ -194,8 +195,6 @@ with tab_model:
     st.divider()
 
     # Confusion matrix image
-    import os
-
     cm_path = "models/confusion_matrix.png"
     if os.path.exists(cm_path):
         st.image(cm_path, caption="Confusion Matrix", width=500)
