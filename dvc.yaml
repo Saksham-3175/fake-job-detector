@@ -15,7 +15,8 @@ stages:
       - data/test.csv
       - ml/train.py
     outs:
-      - models/fake_job_model.joblib
+      - models/fake_job_model.joblib:
+          cache: false
     metrics:
       - metrics.json:
           cache: false

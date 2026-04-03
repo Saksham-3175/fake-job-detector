@@ -136,6 +136,9 @@ def main():
         plt.savefig("models/confusion_matrix.png", dpi=150)
         plt.close()
 
+        # Save model locally for the API (must exist before log_artifact)
+        joblib.dump(pipeline, "models/fake_job_model.joblib")
+
         # Log artifacts
         mlflow.log_artifact("models/confusion_matrix.png")
         mlflow.log_artifact("models/fake_job_model.joblib")
@@ -146,9 +149,6 @@ def main():
             artifact_path="model",
             registered_model_name="fake-job-detector",
         )
-
-        # Save model locally for the API
-        joblib.dump(pipeline, "models/fake_job_model.joblib")
 
     # Transition the newly registered version to Staging
     latest_versions = client.get_latest_versions("fake-job-detector", stages=["None"])

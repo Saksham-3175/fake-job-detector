@@ -1,0 +1,50 @@
+schema: '2.0'
+stages:
+  preprocess:
+    cmd: python ml/preprocess.py
+    deps:
+    - path: data/fake_job_postings.csv
+      hash: md5
+      md5: 6cf8dba3fc88712d8d1181741874c041
+      size: 50043721
+    - path: ml/preprocess.py
+      hash: md5
+      md5: 0457e10d78d7143bb8beb747b1e2bfa1
+      size: 1666
+    outs:
+    - path: data/test.csv
+      hash: md5
+      md5: 97d2eb3100dd52371b63df937878fbdb
+      size: 9854352
+    - path: data/train.csv
+      hash: md5
+      md5: 11a7fb44a9bc57e75710b7284b31c5f5
+      size: 38539042
+  train:
+    cmd: python ml/train.py
+    deps:
+    - path: data/test.csv
+      hash: md5
+      md5: 97d2eb3100dd52371b63df937878fbdb
+      size: 9854352
+    - path: data/train.csv
+      hash: md5
+      md5: 11a7fb44a9bc57e75710b7284b31c5f5
+      size: 38539042
+    - path: ml/train.py
+      hash: md5
+      md5: dfd0744c8d7301ea126893bc6dd9aa82
+      size: 5567
+    outs:
+    - path: metrics.json
+      hash: md5
+      md5: 51deb9935a11f4ec839f55eb236bd4f0
+      size: 145
+    - path: models/confusion_matrix.png
+      hash: md5
+      md5: 012da425dac002dafd2729fcbda3c9ad
+      size: 34871
+    - path: models/fake_job_model.joblib
+      hash: md5
+      md5: 43fee9af99c04d4c56be680749b5f939
+      size: 2488916
